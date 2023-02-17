@@ -100,7 +100,7 @@ TEST_P(VArrayTypedTests, Base)
         const void* rawDataOfVArray = arrayUntyped->getReadPtr(location);
 
         VArrayTyped<int>::Ptr arrayTypedFromUntyped = VArrayTyped<int>::create(arrayUntyped);
-        const void* rawDataOfVArrayTypedFromVArray = arrayTypedFromUntyped->untyped()->getReadPtr(location);
+        const void* rawDataOfVArrayTypedFromVArray = arrayTypedFromUntyped->untyped().getReadPtr(location);
 
         for (int i = 0; i < arrayUntyped->getElemCount(); ++i)
         {

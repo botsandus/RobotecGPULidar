@@ -64,13 +64,14 @@ public:
         }
     }
 
-     VArray::Ptr untyped()
+     VArray untyped()
      {
-        return std::dynamic_pointer_cast<VArray>(shared_from_this());
+        return static_cast<VArray>(*this);
      };
-    VArray::ConstPtr untyped() const
+    VArray untyped() const
     {
-        return std::dynamic_pointer_cast<const VArray>(shared_from_this());
+        return static_cast<const VArray>(*this);
+        //return std::dynamic_pointer_cast<const VArray>(shared_from_this());
     };
 
     void getData(T* typedData, std::size_t count)
@@ -100,9 +101,8 @@ public:
     T* getHostPtr() { return dynamic_cast<T*>(VArray::getWritePtr(MemLoc::Host)); }
     const T* getHostPtr() const { return dynamic_cast<const T*>(VArray::getReadPtr(MemLoc::Device)); }
 
-    T* getDevicePtr() { return static_cast<T*>(VArray::getWritePtr(MemLoc::Device)); }
-
-    const T* getDevicePtr() const { return static_cast<const T*>(VArray::getReadPtr(MemLoc::Device)); }
+    T* getDevicePtr() { return reinterpret_cast<T*>(VArray::getWritePtr(MemLoc::Device)); }
+    const T* getDevicePtr() const { return reinterpret_cast<const T*>(VArray::getReadPtr(MemLoc::Device)); }
 
     T& operator[](int idx) { return (reinterpret_cast<T*>(VArray::getWritePtr(MemLoc::Host)))[idx]; }
     const T& operator[](int idx) const { return (reinterpret_cast<const T*>(VArray::getReadPtr(MemLoc::Host)))[idx]; }
