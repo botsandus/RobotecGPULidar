@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <graph/NodesCore.hpp>
-#include <gpu/nodeKernels.hpp>
 #include <RGLFields.hpp>
+#include <gpu/nodeKernels.hpp>
+#include <graph/NodesCore.hpp>
 
-static VArrayProxy<GPUFieldDesc>::Ptr makeGPUFieldDesc(IPointsNode::Ptr input, const std::vector<rgl_field_t> &fields, cudaStream_t stream);
+static VArrayTyped<GPUFieldDesc>::Ptr makeGPUFieldDesc(IPointsNode::Ptr input, const std::vector<rgl_field_t> &fields, cudaStream_t stream);
 
 void FormatPointsNode::setParameters(const std::vector<rgl_field_t>& fields)
 {
@@ -65,13 +65,15 @@ std::size_t FormatPointsNode::getFieldPointSize(rgl_field_t field) const
 }
 
 // Constructor for GPUFieldDesc, implemented here to avoid polluting gpu-visible header.
-static VArrayProxy<GPUFieldDesc>::Ptr makeGPUFieldDesc(IPointsNode::Ptr input, const std::vector<rgl_field_t> &fields, cudaStream_t stream)
+static VArrayTyped<GPUFieldDesc>::Ptr makeGPUFieldDesc(IPointsNode::Ptr input, const std::vector<rgl_field_t> &fields, cudaStream_t stream)
 {
-	auto gpuFields = VArrayProxy<GPUFieldDesc>::create(fields.size());
+	auto gpuFields = VArrayTyped<GPUFieldDesc>::create(fields.size());
 	std::size_t offset = 0;
 	std::size_t gpuFieldIdx = 0;
-	for (size_t i = 0; i < fields.size(); ++i) {
-		if (!isDummy(fields[i])) {
+	for (size_t i = 0; i < fields.size(); ++i)
+        {
+		if (!isDummy(fields[i]))
+                {
 			(*gpuFields)[gpuFieldIdx] = GPUFieldDesc {
 			// TODO(prybicki): distinguish between read / write fields here
 			.data = static_cast<const char*>(input->getFieldData(fields[i], stream)->getReadPtr(MemLoc::Device)),

@@ -28,9 +28,9 @@ void RaytraceNode::validate()
 }
 
 template<rgl_field_t field>
-auto RaytraceNode::getPtrTo()
+auto* RaytraceNode::getPtrTo()
 {
-	return fields.contains(field) ? fieldData.at(field)->getTypedProxy<typename Field<field>::type>()->getDevicePtr() : nullptr;
+        return fields.contains(field) ? VArrayTyped<typename Field<field>::type>::create(fieldData.at(field))->getDevicePtr() : nullptr;
 }
 
 void RaytraceNode::schedule(cudaStream_t stream)

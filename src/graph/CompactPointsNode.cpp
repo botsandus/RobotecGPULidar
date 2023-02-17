@@ -34,6 +34,7 @@ void CompactPointsNode::schedule(cudaStream_t stream)
 	cacheManager.trigger();
 	inclusivePrefixSum->resize(input->getHeight() * input->getWidth(), false, false);
 	size_t pointCount = input->getWidth() * input->getHeight();
+        auto temp = input->getFieldDataTyped<IS_HIT_I32>(stream);
 	const auto* isHit = input->getFieldDataTyped<IS_HIT_I32>(stream)->getDevicePtr();
 	gpuFindCompaction(stream, pointCount, isHit, inclusivePrefixSum->getDevicePtr(), &width);
 	CHECK_CUDA(cudaEventRecord(finishedEvent, stream));

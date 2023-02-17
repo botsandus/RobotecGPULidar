@@ -30,7 +30,7 @@
 #include <gpu/nodeKernels.hpp>
 #include <CacheManager.hpp>
 #include <VArray.hpp>
-#include <VArrayProxy.hpp>
+#include <VArrayTyped.hpp>
 
 /**
  * Notes for maintainers:
@@ -94,7 +94,7 @@ struct CompactPointsNode : Node, IPointsNodeSingleInput
 private:
 	size_t width;
 	cudaEvent_t finishedEvent = nullptr;
-	VArrayProxy<CompactionIndexType>::Ptr inclusivePrefixSum = VArrayProxy<CompactionIndexType>::create();
+	VArrayTyped<CompactionIndexType>::Ptr inclusivePrefixSum = VArrayTyped<CompactionIndexType>::create();
 	mutable CacheManager<rgl_field_t, VArray::Ptr> cacheManager;
 };
 
@@ -126,11 +126,11 @@ private:
 	std::shared_ptr<Scene> scene;
 	std::set<rgl_field_t> fields;
 	IRaysNode::Ptr raysNode;
-	VArrayProxy<RaytraceRequestContext>::Ptr requestCtx = VArrayProxy<RaytraceRequestContext>::create(1);
+        VArrayTyped<RaytraceRequestContext>::Ptr requestCtx = VArrayTyped<RaytraceRequestContext>::create(1);
 	std::unordered_map<rgl_field_t, VArray::Ptr> fieldData;
 
 	template<rgl_field_t>
-	auto getPtrTo();
+        auto* getPtrTo();
 };
 
 struct TransformPointsNode : Node, IPointsNodeSingleInput
@@ -154,7 +154,7 @@ struct TransformPointsNode : Node, IPointsNodeSingleInput
 
 private:
 	Mat3x4f transform;
-	VArrayProxy<Field<XYZ_F32>::type>::Ptr output = VArrayProxy<Field<XYZ_F32>::type>::create();
+        VArrayTyped<Field<XYZ_F32>::type>::Ptr output = VArrayTyped<Field<XYZ_F32>::type>::create();
 };
 
 struct TransformRaysNode : Node, IRaysNodeSingleInput
@@ -167,12 +167,12 @@ struct TransformRaysNode : Node, IRaysNodeSingleInput
 	void schedule(cudaStream_t stream) override;
 
 	// Data getters
-	VArrayProxy<Mat3x4f>::ConstPtr getRays() const override { return rays; }
+        VArrayTyped<Mat3x4f>::ConstPtr getRays() const override { return rays; }
 	Mat3x4f getCumulativeRayTransfrom() const override { return transform * input->getCumulativeRayTransfrom(); }
 
 private:
 	Mat3x4f transform;
-	VArrayProxy<Mat3x4f>::Ptr rays = VArrayProxy<Mat3x4f>::create();
+        VArrayTyped<Mat3x4f>::Ptr rays = VArrayTyped<Mat3x4f>::create();
 };
 
 struct FromMat3x4fRaysNode : Node, IRaysNode
@@ -189,11 +189,11 @@ struct FromMat3x4fRaysNode : Node, IRaysNode
 	std::optional<size_t> getRingIdsCount() const override { return std::nullopt; }
 
 	// Data getters
-	VArrayProxy<Mat3x4f>::ConstPtr getRays() const override { return rays; }
-	std::optional<VArrayProxy<int>::ConstPtr> getRingIds() const override { return std::nullopt; }
+        VArrayTyped<Mat3x4f>::ConstPtr getRays() const override { return rays; }
+	std::optional<VArrayTyped<int>::ConstPtr> getRingIds() const override { return std::nullopt; }
 
 private:
-	VArrayProxy<Mat3x4f>::Ptr rays = VArrayProxy<Mat3x4f>::create();
+    VArrayTyped<Mat3x4f>::Ptr rays = VArrayTyped<Mat3x4f>::create();
 };
 
 struct SetRingIdsRaysNode : Node, IRaysNodeSingleInput
@@ -209,10 +209,10 @@ struct SetRingIdsRaysNode : Node, IRaysNodeSingleInput
 	std::optional<size_t> getRingIdsCount() const override { return ringIds->getCount(); }
 
 	// Data getters
-	std::optional<VArrayProxy<int>::ConstPtr> getRingIds() const override { return ringIds; }
+	std::optional<VArrayTyped<int>::ConstPtr> getRingIds() const override { return ringIds; }
 
 private:
-	VArrayProxy<int>::Ptr ringIds = VArrayProxy<int>::create();
+        VArrayTyped<int>::Ptr ringIds = VArrayTyped<int>::create();
 };
 
 struct YieldPointsNode : Node, IPointsNodeSingleInput
@@ -301,7 +301,7 @@ struct GaussianNoiseAngularRayNode : Node, IRaysNodeSingleInput
 	void schedule(cudaStream_t stream) override;
 
 	// Data getters
-	VArrayProxy<Mat3x4f>::ConstPtr getRays() const override { return rays; }
+        VArrayTyped<Mat3x4f>::ConstPtr getRays() const override { return rays; }
 
 private:
 	float mean;
@@ -310,8 +310,8 @@ private:
 	std::random_device randomDevice;
 	Mat3x4f lookAtOriginTransform;
 
-	VArrayProxy<curandStatePhilox4_32_10_t>::Ptr randomizationStates = VArrayProxy<curandStatePhilox4_32_10_t>::create();
-	VArrayProxy<Mat3x4f>::Ptr rays = VArrayProxy<Mat3x4f>::create();
+        VArrayTyped<curandStatePhilox4_32_10_t>::Ptr randomizationStates = VArrayTyped<curandStatePhilox4_32_10_t>::create();
+        VArrayTyped<Mat3x4f>::Ptr rays = VArrayTyped<Mat3x4f>::create();
 };
 
 struct GaussianNoiseAngularHitpointNode : Node, IPointsNodeSingleInput
@@ -337,9 +337,9 @@ private:
 	std::random_device randomDevice;
 	Mat3x4f lookAtOriginTransform;
 
-	VArrayProxy<curandStatePhilox4_32_10_t>::Ptr randomizationStates = VArrayProxy<curandStatePhilox4_32_10_t>::create();
-	VArrayProxy<Field<XYZ_F32>::type>::Ptr outXyz = VArrayProxy<Field<XYZ_F32>::type>::create();
-	VArrayProxy<Field<DISTANCE_F32>::type>::Ptr outDistance = nullptr;
+        VArrayTyped<curandStatePhilox4_32_10_t>::Ptr randomizationStates = VArrayTyped<curandStatePhilox4_32_10_t>::create();
+        VArrayTyped<Field<XYZ_F32>::type>::Ptr outXyz = VArrayTyped<Field<XYZ_F32>::type>::create();
+        VArrayTyped<Field<DISTANCE_F32>::type>::Ptr outDistance = nullptr;
 };
 
 struct GaussianNoiseDistanceNode : Node, IPointsNodeSingleInput
@@ -365,7 +365,7 @@ private:
 	std::random_device randomDevice;
 	Mat3x4f lookAtOriginTransform;
 
-	VArrayProxy<curandStatePhilox4_32_10_t>::Ptr randomizationStates = VArrayProxy<curandStatePhilox4_32_10_t>::create();
-	VArrayProxy<Field<XYZ_F32>::type>::Ptr outXyz = VArrayProxy<Field<XYZ_F32>::type>::create();
-	VArrayProxy<Field<DISTANCE_F32>::type>::Ptr outDistance = nullptr;
+        VArrayTyped<curandStatePhilox4_32_10_t>::Ptr randomizationStates = VArrayTyped<curandStatePhilox4_32_10_t>::create();
+        VArrayTyped<Field<XYZ_F32>::type>::Ptr outXyz = VArrayTyped<Field<XYZ_F32>::type>::create();
+        VArrayTyped<Field<DISTANCE_F32>::type>::Ptr outDistance = nullptr;
 };

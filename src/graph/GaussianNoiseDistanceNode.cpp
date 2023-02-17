@@ -32,7 +32,7 @@ void GaussianNoiseDistanceNode::validate()
 	// Other fields that depend on the main field (for now, it's XYZ_F32) should be calculated somewhere else (e.g., in data getters nodes).
 	if (input->hasField(DISTANCE_F32)) {
 		if (outDistance == nullptr) {
-			outDistance = VArrayProxy<Field<DISTANCE_F32>::type>::create();
+			outDistance = VArrayTyped<Field<DISTANCE_F32>::type>::create();
 		}
 	} else {
 		outDistance.reset();
@@ -55,7 +55,8 @@ void GaussianNoiseDistanceNode::schedule(cudaStream_t stream)
 		gpuSetupGaussianNoiseGenerator(nullptr, pointCount, randomDevice(), randomizationStates->getDevicePtr());
 	}
 
-	const auto inXyz = input->getFieldDataTyped<XYZ_F32>(stream);
+        auto inXyz = input->getFieldDataTyped<XYZ_F32>(stream);
+	//const auto inXyz = input->getFieldDataTyped<XYZ_F32>(stream);
 	const auto* inXyzPtr = inXyz->getDevicePtr();
 	auto* outXyzPtr = outXyz->getDevicePtr();
 	gpuAddGaussianNoiseDistance(stream, pointCount, mean, stDevBase, stDevRisePerMeter, lookAtOriginTransform, randomizationStates->getDevicePtr(), inXyzPtr, outXyzPtr, outDistancePtr);
@@ -66,7 +67,7 @@ VArray::ConstPtr GaussianNoiseDistanceNode::getFieldData(rgl_field_t field, cuda
 	if (field == XYZ_F32) {
 		// TODO(msz-rai): check sync is necessary
 		CHECK_CUDA(cudaStreamSynchronize(stream));
-		return outXyz->untyped();
+		return (outXyz)->untyped();
 	}
 	if (field == DISTANCE_F32 && outDistance != nullptr) {
 		// TODO(msz-rai): check sync is necessary

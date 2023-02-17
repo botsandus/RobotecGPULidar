@@ -6,12 +6,12 @@
 
 #include <math/Mat3x4f.hpp>
 
-class Graph : public RGLAutoCleanupTest {};
+class GraphCase : public RGLAutoCleanupTest {};
 
 #ifdef RGL_BUILD_PCL_EXTENSION
 #include <rgl/api/extensions/pcl.h>
 
-TEST_F(Graph, FullLinear)
+TEST_F(GraphCase, FullLinear)
 {
 	setupBoxesAlongAxes(nullptr);
 
@@ -38,7 +38,7 @@ TEST_F(Graph, FullLinear)
 	EXPECT_RGL_SUCCESS(rgl_graph_write_pcd_file(downsample, "minimal.pcd"));
 }
 
-TEST_F(Graph, NodeRemoval)
+TEST_F(GraphCase, NodeRemoval)
 {
 	auto mesh = makeCubeMesh();
 
@@ -85,7 +85,7 @@ TEST_F(Graph, NodeRemoval)
 	EXPECT_RGL_SUCCESS(rgl_graph_write_pcd_file(temporalMerge, "two_boxes_removal.pcd"));
 }
 
-TEST_F(Graph, SpatialMerge)
+TEST_F(GraphCase, SpatialMerge)
 {
 	auto mesh = makeCubeMesh();
 
@@ -124,7 +124,7 @@ TEST_F(Graph, SpatialMerge)
 	EXPECT_RGL_SUCCESS(rgl_graph_write_pcd_file(spatialMerge, "two_boxes_spatial_merge.pcd"));
 }
 
-TEST_F(Graph, TemporalMerge)
+TEST_F(GraphCase, TemporalMerge)
 {
 	auto mesh = makeCubeMesh();
 
@@ -164,7 +164,7 @@ TEST_F(Graph, TemporalMerge)
 }
 #endif
 
-TEST_F(Graph, FormatNodeResults)
+TEST_F(GraphCase, FormatNodeResults)
 {
 	auto mesh = makeCubeMesh();
 

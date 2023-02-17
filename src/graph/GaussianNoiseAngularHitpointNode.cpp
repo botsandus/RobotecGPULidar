@@ -30,12 +30,16 @@ void GaussianNoiseAngularHitpointNode::validate()
 	// This node will modifty field DISTANCE_F32 if present.
 	// In the future: only one field should be modified.
 	// Other fields that depend on the main field (for now, it's XYZ_F32) should be calculated somewhere else (e.g., in data getters nodes).
-	if (input->hasField(DISTANCE_F32)) {
-		if (outDistance == nullptr) {
-			outDistance = VArrayProxy<Field<DISTANCE_F32>::type>::create();
-		}
-	} else {
-		outDistance.reset();
+	if (input->hasField(DISTANCE_F32))
+        {
+            if (outDistance == nullptr)
+            {
+                outDistance = VArrayTyped<Field<DISTANCE_F32>::type>::create();
+            }
+	}
+        else
+        {
+            outDistance.reset();
 	}
 }
 
@@ -63,6 +67,7 @@ void GaussianNoiseAngularHitpointNode::schedule(cudaStream_t stream)
 
 VArray::ConstPtr GaussianNoiseAngularHitpointNode::getFieldData(rgl_field_t field, cudaStream_t stream) const
 {
+        //TODO mrozikp
 	if (field == XYZ_F32) {
 		// TODO(msz-rai): check sync is necessary
 		CHECK_CUDA(cudaStreamSynchronize(stream));

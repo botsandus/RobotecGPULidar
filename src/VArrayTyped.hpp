@@ -19,18 +19,19 @@
  * TODO
  */
 template <typename T>
-struct VArrayTyped : public VArray {
+struct VArrayTyped : public VArray, std::enable_shared_from_this<VArrayTyped<T>>
+{
 public:
     using Ptr = std::shared_ptr<VArrayTyped<T>>;
     using ConstPtr = std::shared_ptr<const VArrayTyped<T>>;
 
-    template <typename... Args>
-    static VArrayTyped<T>::Ptr create(Args... args)
+   // template <typename... Args>
+    static VArrayTyped<T>::Ptr create(std::size_t initialSize)
     {
-        return VArrayTyped<T>::Ptr(new VArrayTyped<T>(args...));
+        return VArrayTyped<T>::Ptr(new VArrayTyped<T>(initialSize));
     }
 
-    static VArrayTyped<T>::Ptr create(VArray::Ptr src)
+    static VArrayTyped<T>::Ptr create(VArray::Ptr src = nullptr)
     {
         if (src != nullptr)
         {
@@ -46,20 +47,44 @@ public:
         }
     }
 
+    //TODO mrozikp Think how to merge it with non const method!
+    static VArrayTyped<T>::ConstPtr create(VArray::ConstPtr src)
+    {
+        if (src != nullptr)
+        {
+            if (typeid(T) != src->typeInfo)
+            {
+                auto msg = fmt::format("VArray type mismatch: {} requested as {}", name(src->typeInfo), name(typeid(T)));
+                throw std::invalid_argument(msg);
+            }
+            return std::reinterpret_pointer_cast<const VArrayTyped<T>>(src);
+        } else
+        {
+            return VArrayTyped<T>::ConstPtr(new VArrayTyped<T>(0));
+        }
+    }
 
-    VArray::Ptr untyped() { return this; };
-    VArray::ConstPtr untyped() const { return this; };
+     VArray::Ptr untyped()
+     {
+        return std::dynamic_pointer_cast<VArray>(shared_from_this());
+     };
+    VArray::ConstPtr untyped() const
+    {
+        return std::dynamic_pointer_cast<const VArray>(shared_from_this());
+    };
 
     void getData(T* typedData, std::size_t count)
     {
-        void* rawData;
-        VArray::getData(rawData, count);
-        typedData = std::dynamic_pointer_cast<T>(rawData);
+        VArray::getData((void*)typedData, count);
+        // TODO think how it should work rly
+        //void* rawData;
+        //VArray::getData(rawData, count);
+        //typedData = std::dynamic_pointer_cast<T>(rawData);
     }
 
     void setData(const T* rawData, std::size_t count)
     {
-        // TODO check type before internal setdata
+        // TODO mrozikp check type before internal setdata
         VArray::setData(rawData, count);
     }
 
@@ -88,8 +113,8 @@ private:
     {
     }
 
-    VArrayTyped(const std::type_info& type, std::size_t sizeOfType, std::size_t initialSize)
-        : VArray(type, sizeOfType, initialSize)
-    {
-    }
+//    VArrayTyped(const std::type_info& type, std::size_t sizeOfType, std::size_t initialSize)
+//        : VArray(type, sizeOfType, initialSize)
+//    {
+//    }
 };

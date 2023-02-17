@@ -26,7 +26,7 @@
 #include <typingUtils.hpp>
 
 template<typename T>
-struct VArrayProxy;
+struct VArrayTyped;
 
 enum struct MemLoc
 {
@@ -58,20 +58,13 @@ struct VArray : std::enable_shared_from_this<VArray>
 	{ return VArray::Ptr(new VArray(typeid(T), sizeof(T), initialSize)); }
 
 
-	// Typed proxy construction
-	template<typename T>
-	typename VArrayProxy<T>::Ptr getTypedProxy()
-	{
-		if (typeid(T) != typeInfo) {
-			auto msg = fmt::format("VArray type mismatch: {} requested as {}", name(typeInfo), name(typeid(T)));
-			throw std::invalid_argument(msg);
-		}
-		return VArrayProxy<T>::create(shared_from_this());
-	}
+//        virtual VArray::Ptr getBaseSharedPointer() {
+//                return shared_from_this();
+//        }
 
-	template<typename T>
-	typename VArrayProxy<T>::ConstPtr getTypedProxy() const
-	{ return VArrayProxy<T>::create(shared_from_this()); }
+//	template<typename T>
+//	typename VArrayProxy<T>::ConstPtr getTypedProxy() const
+//	{ return VArrayProxy<T>::create(shared_from_this()); }
 
 
 	// Methods
@@ -106,6 +99,6 @@ private:
 	template<typename T>
 	friend struct VArrayTyped;
 
-	template<typename T>
-	friend struct VArrayProxy;
+	//template<typename T>
+	//friend struct VArrayProxy;
 };

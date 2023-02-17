@@ -48,7 +48,7 @@ private:
 	Vec3f leafDims;
 	VArray::Ptr inputFmtData = VArray::create<char>();
 	cudaEvent_t finishedEvent = nullptr;
-	VArrayProxy<Field<RAY_IDX_U32>::type>::Ptr filteredIndices = VArrayProxy<Field<RAY_IDX_U32>::type>::create();
+	VArrayTyped<Field<RAY_IDX_U32>::type>::Ptr filteredIndices = VArrayProxy<Field<RAY_IDX_U32>::type>::create();
 	VArray::Ptr filteredPoints = VArray::create<pcl::PointXYZL>();
 	mutable CacheManager<rgl_field_t, VArray::Ptr> cacheManager;
 };
