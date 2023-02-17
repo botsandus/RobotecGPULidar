@@ -13,22 +13,83 @@
 // limitations under the License.
 
 #pragma once
-
+#include <VArray.hpp>
+#include <cuda.h>
 /*
- * Owning VArray wrapper with a typed interface.
+ * TODO
  */
-template<typename T>
-struct VArrayTyped
-{
-	static VArrayTyped<T>::Ptr create()	{ return VArrayTyped<T>::Ptr(new VArrayTyped<T>());	}
-	static VArrayTyped<T>::Ptr create(VArray&& src)	{ return VArrayTyped<T>::Ptr(new VArrayTyped<T>(src)); }
+template <typename T>
+struct VArrayTyped : public VArray {
+public:
+    using Ptr = std::shared_ptr<VArrayTyped<T>>;
+    using ConstPtr = std::shared_ptr<const VArrayTyped<T>>;
 
-	// TODO: implement if needed :)
+    template <typename... Args>
+    static VArrayTyped<T>::Ptr create(Args... args)
+    {
+        return VArrayTyped<T>::Ptr(new VArrayTyped<T>(args...));
+    }
+
+    static VArrayTyped<T>::Ptr create(VArray::Ptr src)
+    {
+        if (src != nullptr)
+        {
+            if (typeid(T) != src->typeInfo)
+            {
+                auto msg = fmt::format("VArray type mismatch: {} requested as {}", name(src->typeInfo), name(typeid(T)));
+                throw std::invalid_argument(msg);
+            }
+            return std::reinterpret_pointer_cast<VArrayTyped<T>>(src);
+        } else
+        {
+            return VArrayTyped<T>::Ptr(new VArrayTyped<T>(0));
+        }
+    }
+
+
+    VArray::Ptr untyped() { return this; };
+    VArray::ConstPtr untyped() const { return this; };
+
+    void getData(T* typedData, std::size_t count)
+    {
+        void* rawData;
+        VArray::getData(rawData, count);
+        typedData = std::dynamic_pointer_cast<T>(rawData);
+    }
+
+    void setData(const T* rawData, std::size_t count)
+    {
+        // TODO check type before internal setdata
+        VArray::setData(rawData, count);
+    }
+
+    std::size_t getCount() const { return VArray::getElemCount(); }
+    std::size_t getBytesInUse() const { return VArray::getElemCount() * sizeof(T); }
+
+    T* getWritePtr(MemLoc location) { return reinterpret_cast<T*>(VArray::getWritePtr(location)); }
+    const T* getReadPtr(MemLoc location) const { return reinterpret_cast<const T*>(VArray::getReadPtr(location)); }
+
+    CUdeviceptr getCUdeviceptr() { return reinterpret_cast<CUdeviceptr>(VArray::getWritePtr(MemLoc::Device)); }
+
+    // TODO(prybicki): remove these in favor of ...(location)
+    T* getHostPtr() { return dynamic_cast<T*>(VArray::getWritePtr(MemLoc::Host)); }
+    const T* getHostPtr() const { return dynamic_cast<const T*>(VArray::getReadPtr(MemLoc::Device)); }
+
+    T* getDevicePtr() { return static_cast<T*>(VArray::getWritePtr(MemLoc::Device)); }
+
+    const T* getDevicePtr() const { return static_cast<const T*>(VArray::getReadPtr(MemLoc::Device)); }
+
+    T& operator[](int idx) { return (reinterpret_cast<T*>(VArray::getWritePtr(MemLoc::Host)))[idx]; }
+    const T& operator[](int idx) const { return (reinterpret_cast<const T*>(VArray::getReadPtr(MemLoc::Host)))[idx]; }
 
 private:
-	VArrayTyped(std::size_t initialSize) : src(typeid(T), sizeof(T), initialSize) {}
-	explicit VArrayTyped(VArray&& src) : src(std::move(src)) {}
+    VArrayTyped(std::size_t initialSize)
+        : VArray(typeid(T), sizeof(T), initialSize)
+    {
+    }
 
-private:
-	VArray src;
+    VArrayTyped(const std::type_info& type, std::size_t sizeOfType, std::size_t initialSize)
+        : VArray(type, sizeOfType, initialSize)
+    {
+    }
 };
