@@ -77,11 +77,8 @@ struct IPointsNode
 	getFieldDataTyped(cudaStream_t stream)
 	{
             auto temp =  getFieldData(field, stream);
-            return VArrayTyped<typename Field<field>::type>::create(temp);
-           // return  std::make_shared(VArrayTyped<typename Field<field>::type>(temp));
-           // return std::dynamic_pointer_cast<const VArrayTyped<typename Field<field>::type>>(temp);
-            //return getFieldData(field, stream)->template getTypedProxy<typename Field<field>::type>();
-
+            auto result = VArrayTyped<typename Field<field>::type>::create(temp);
+            return result;
         }
 };
 

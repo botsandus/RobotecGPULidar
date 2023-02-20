@@ -57,7 +57,8 @@ public:
                 auto msg = fmt::format("VArray type mismatch: {} requested as {}", name(src->typeInfo), name(typeid(T)));
                 throw std::invalid_argument(msg);
             }
-            return std::reinterpret_pointer_cast<const VArrayTyped<T>>(src);
+            return std::static_pointer_cast<const VArrayTyped<T>> (src);
+
         } else
         {
             return VArrayTyped<T>::ConstPtr(new VArrayTyped<T>(0));
@@ -71,16 +72,12 @@ public:
     VArray untyped() const
     {
         return static_cast<const VArray>(*this);
-        //return std::dynamic_pointer_cast<const VArray>(shared_from_this());
     };
 
     void getData(T* typedData, std::size_t count)
     {
         VArray::getData((void*)typedData, count);
         // TODO think how it should work rly
-        //void* rawData;
-        //VArray::getData(rawData, count);
-        //typedData = std::dynamic_pointer_cast<T>(rawData);
     }
 
     void setData(const T* rawData, std::size_t count)
@@ -113,8 +110,4 @@ private:
     {
     }
 
-//    VArrayTyped(const std::type_info& type, std::size_t sizeOfType, std::size_t initialSize)
-//        : VArray(type, sizeOfType, initialSize)
-//    {
-//    }
 };
