@@ -70,12 +70,12 @@ VArray::ConstPtr GaussianNoiseAngularHitpointNode::getFieldData(rgl_field_t fiel
 	if (field == XYZ_F32) {
 		// TODO(msz-rai): check sync is necessary
 		CHECK_CUDA(cudaStreamSynchronize(stream));
-		return std::make_shared<const VArray>(outXyz->untyped());
+		return outXyz->untyped();
 	}
 	if (field == DISTANCE_F32 && outDistance != nullptr) {
 		// TODO(msz-rai): check sync is necessary
 		CHECK_CUDA(cudaStreamSynchronize(stream));
-		return std::make_shared<const VArray>(outDistance->untyped());
+		return outDistance->untyped();
 	}
 	return input->getFieldData(field, stream);
 }

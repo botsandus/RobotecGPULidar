@@ -14,15 +14,15 @@
 
 #pragma once
 
-#include <typeindex>
 #include <map>
+#include <typeindex>
 
 #include <cuda_runtime.h>
 #include <macros/cuda.hpp>
 
 #include <Logger.hpp>
-#include <rgl/api/core.h>
 #include <math/Vector.hpp>
+#include <rgl/api/core.h>
 #include <typingUtils.hpp>
 
 template<typename T>
@@ -51,20 +51,22 @@ struct VArray : std::enable_shared_from_this<VArray>
 	};
 
 	// Static construction
-	static VArray::Ptr create(rgl_field_t type, std::size_t initialSize=0);
+	static VArray::Ptr create(rgl_field_t type, std::size_t initialSize = 0);
 
 	template<typename T>
-	static VArray::Ptr create(std::size_t initialSize=0)
-	{ return VArray::Ptr(new VArray(typeid(T), sizeof(T), initialSize)); }
+	static VArray::Ptr create(std::size_t initialSize = 0)
+	{
+		return VArray::Ptr(new VArray(typeid(T), sizeof(T), initialSize));
+	}
 
 
-//        virtual VArray::Ptr getBaseSharedPointer() {
-//                return shared_from_this();
-//        }
+	//        virtual VArray::Ptr getBaseSharedPointer() {
+	//                return shared_from_this();
+	//        }
 
-//	template<typename T>
-//	typename VArrayProxy<T>::ConstPtr getTypedProxy() const
-//	{ return VArrayProxy<T>::create(shared_from_this()); }
+	//	template<typename T>
+	//	typename VArrayProxy<T>::ConstPtr getTypedProxy() const
+	//	{ return VArrayProxy<T>::create(shared_from_this()); }
 
 
 	// Methods
@@ -72,22 +74,20 @@ struct VArray : std::enable_shared_from_this<VArray>
 	const void* getReadPtr(MemLoc location) const;
 	void setData(const void* src, std::size_t elements);
 	void getData(void* dstRaw, std::size_t count) const;
-	void insertData(const void *src, std::size_t elements, std::size_t offset);
-	void resize(std::size_t newCount, bool zeroInit=true, bool preserveData=true);
-	void reserve(std::size_t newCapacity, bool preserveData=true);
+	void insertData(const void* src, std::size_t elements, std::size_t offset);
+	void resize(std::size_t newCount, bool zeroInit = true, bool preserveData = true);
+	void reserve(std::size_t newCapacity, bool preserveData = true);
 	std::size_t getElemSize() const { return sizeOfType; }
 	std::size_t getElemCount() const { return current().elemCount; }
-	std::size_t getElemCapacity() const { return current().elemCapacity; }
+	virtual ~VArray();
 
-	~VArray();
-
-private:
+  private:
 	Instance& current() const { return instance.at(currentLocation); }
-	void* memAlloc(std::size_t bytes, std::optional<MemLoc> locationHint= std::nullopt) const;
-	void memFree(void*, std::optional<MemLoc> locationHint= std::nullopt) const;
+	void* memAlloc(std::size_t bytes, std::optional<MemLoc> locationHint = std::nullopt) const;
+	void memFree(void*, std::optional<MemLoc> locationHint = std::nullopt) const;
 	void migrateToLocation(MemLoc location);
 
-private:
+  private:
 	std::size_t sizeOfType;
 	std::reference_wrapper<const std::type_info> typeInfo;
 
@@ -99,6 +99,6 @@ private:
 	template<typename T>
 	friend struct VArrayTyped;
 
-	//template<typename T>
-	//friend struct VArrayProxy;
+	// template<typename T>
+	// friend struct VArrayProxy;
 };

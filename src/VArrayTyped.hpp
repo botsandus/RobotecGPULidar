@@ -65,13 +65,12 @@ public:
         }
     }
 
-     VArray untyped()
-     {
-        return static_cast<VArray>(*this);
+     VArray::Ptr untyped(){
+        return std::static_pointer_cast<VArray>(shared_from_this());
      };
-    VArray untyped() const
-    {
-        return static_cast<const VArray>(*this);
+
+    VArray::ConstPtr untyped() const{
+        return std::static_pointer_cast<const VArray>(shared_from_this());
     };
 
     void getData(T* typedData, std::size_t count)
@@ -104,8 +103,9 @@ public:
     T& operator[](int idx) { return (reinterpret_cast<T*>(VArray::getWritePtr(MemLoc::Host)))[idx]; }
     const T& operator[](int idx) const { return (reinterpret_cast<const T*>(VArray::getReadPtr(MemLoc::Host)))[idx]; }
 
+    ~VArrayTyped() override= default;
 private:
-    VArrayTyped(std::size_t initialSize)
+    explicit VArrayTyped(std::size_t initialSize)
         : VArray(typeid(T), sizeof(T), initialSize)
     {
     }
