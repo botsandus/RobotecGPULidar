@@ -20,32 +20,54 @@
 #include <VArrayProxy.hpp>
 #include <RGLFields.hpp>
 #include <gpu/GPUFieldDesc.hpp>
+#include <memory/ConcreteArrays.hpp>
 
+/**
+ * Note: this interface may be removed in the future (rays will become a part of the point cloud)
+ */
 struct IRaysNode
 {
 	using Ptr = std::shared_ptr<IRaysNode>;
-	virtual VArrayProxy<Mat3x4f>::ConstPtr getRays() const = 0;
+	using ConstPtr = std::shared_ptr<const IRaysNode>;
+
 	virtual std::size_t getRayCount() const = 0;
-	virtual std::optional<VArrayProxy<int>::ConstPtr> getRingIds() const = 0;
+	virtual DeviceAsyncArray<Mat3x4f>::ConstPtr getRays() const = 0;
+
+	// RingIds are client-specific ray property.
+	// They are optional, since such concept is not applicable to some lidar implementations.
 	virtual std::optional<std::size_t> getRingIdsCount() const = 0;
+	virtual std::optional<DeviceAsyncArray<int>::ConstPtr> getRingIds() const = 0;
+
+	// Helper method to e.g. correctly apply gaussian noise, accounting for previous transformations.
+	// TODO: It's worth reconsidering to handle this on graph construction level, e.g. forbid transforms before noise.
 	virtual Mat3x4f getCumulativeRayTransfrom() const { return Mat3x4f::identity(); }
 };
 
+// TODO: I*SingleInput convenience interfaces rely on correct behavior of subclass, i.e. getting input pointer.
+// TODO: This could be handled more automatically. Example approach below. If it looks OK, please remove this TODO on review.
 struct IRaysNodeSingleInput : IRaysNode
 {
 	using Ptr = std::shared_ptr<IRaysNodeSingleInput>;
 
-	// Rays description
-	size_t getRayCount() const override { return input->getRayCount(); }
-	std::optional<size_t> getRingIdsCount() const override { return input->getRingIdsCount(); }
+	size_t getRayCount() const override { return getInput()->getRayCount(); }
+	virtual DeviceAsyncArray<Mat3x4f>::ConstPtr getRays() const override { return getInput()->getRays(); };
 
-	// Data getters
-	virtual VArrayProxy<Mat3x4f>::ConstPtr getRays() const override { return input->getRays(); };
-	virtual std::optional<VArrayProxy<int>::ConstPtr> getRingIds() const override { return input->getRingIds(); }
-	virtual Mat3x4f getCumulativeRayTransfrom() const override { return input->getCumulativeRayTransfrom(); }
+	std::optional<size_t> getRingIdsCount() const override { return getInput()->getRingIdsCount(); }
+	virtual std::optional<DeviceAsyncArray<int>::ConstPtr> getRingIds() const override { return getInput()->getRingIds(); }
+
+	virtual Mat3x4f getCumulativeRayTransfrom() const override { return getInput()->getCumulativeRayTransfrom(); }
 
 protected:
-	IRaysNode::Ptr input;
+	IRaysNode::Ptr getInput() const
+	{
+		if (input == nullptr) {
+			input = loadInputNode();
+		}
+		return input;
+	}
+	virtual IRaysNode::Ptr loadInputNode() const = 0;
+protected:
+	mutable IRaysNode::Ptr input;
 };
 
 // TODO(prybicki): getFieldData* may act lazily, so they take stream as a parameter to do the lazy evaluation.

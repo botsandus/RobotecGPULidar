@@ -33,6 +33,10 @@ struct Node : APIObject<Node>, std::enable_shared_from_this<Node>
 	void addChild(Node::Ptr child);
 	void removeChild(Node::Ptr child);
 
+	virtual void onGraphChange() = 0;
+	virtual void onInputChange() = 0;
+
+
 	/**
 	 * Called on every node when the computation graph changes, e.g.:
 	 * - a node gets inserted or removed
