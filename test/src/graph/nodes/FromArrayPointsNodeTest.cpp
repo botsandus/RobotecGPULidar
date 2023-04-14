@@ -1,9 +1,9 @@
 #include <RGLFields.hpp>
 #include <graph/Node.hpp>
 #include <gtest/gtest.h>
-#include <utils.hpp>
+#include <PointsTestHelper.hpp>
 
-class FromArrayPointsNodeTest : public RGLTestWithParam<int>, public RGLPointTestHelper {
+class FromArrayPointsNodeTest : public RGLTestWithParam<int>, public RGLPointsTestHelper {
 protected:
 };
 
