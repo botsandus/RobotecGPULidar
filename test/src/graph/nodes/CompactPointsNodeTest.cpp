@@ -46,6 +46,7 @@ TEST_P(CompactPointsNodeTest, should_remove_all_points_when_all_non_hit)
     createTestUsePointsNode(pointsCount, identityTestTransform, HitPointDensity::ALL_NON_HIT);
     ASSERT_RGL_SUCCESS(rgl_node_points_compact(&compactNode));
     ASSERT_RGL_SUCCESS(rgl_graph_node_add_child(usePointsNode, compactNode));
+
     ASSERT_RGL_SUCCESS(rgl_graph_run(usePointsNode));
 
     int32_t hitpointCount, pointSize;
@@ -106,9 +107,9 @@ TEST_P(CompactPointsNodeTest, should_not_change_hit_points)
                 outData.resize(outCount);
                 EXPECT_RGL_SUCCESS(rgl_graph_get_result_data(compactNode, field, outData.data()));
                 for (int i = 0; i < outCount; ++i) {
-                    EXPECT_NEAR(expectedHitPoints.at(i).xyz[0], outData.at(i)[0], EPSILON_F);
-                    EXPECT_NEAR(expectedHitPoints.at(i).xyz[1], outData.at(i)[1], EPSILON_F);
-                    EXPECT_NEAR(expectedHitPoints.at(i).xyz[2], outData.at(i)[2], EPSILON_F);
+                    EXPECT_EQ(expectedHitPoints.at(i).xyz[0], outData.at(i)[0]);
+                    EXPECT_EQ(expectedHitPoints.at(i).xyz[1], outData.at(i)[1]);
+                    EXPECT_EQ(expectedHitPoints.at(i).xyz[2], outData.at(i)[2]);
                 }
                 break;
             }

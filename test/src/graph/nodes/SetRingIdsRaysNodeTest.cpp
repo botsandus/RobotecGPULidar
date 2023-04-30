@@ -11,13 +11,13 @@ protected:
     void initializeRingNodeAndIds(int idsCount)
     {
         setRingIdsNode = nullptr;
-        ringIds = RGLRingIdsTestHelper::GenerateRingIds(idsCount);
+        ringIds = RGLRingIdsTestHelper::generateRingIds(idsCount);
     }
 
     void initializeRaysAndRaysNode(int rayCount)
     {
         rayNode = nullptr;
-        rays = RGLRaysTestHelper::GenerateRays(rayCount);
+        rays = RGLRaysNodeTestHelper::generateRays(rayCount);
     }
 };
 

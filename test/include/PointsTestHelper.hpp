@@ -1,15 +1,7 @@
-#include <rgl/api/core.h>
-#include <graph/Node.hpp>
-#include <math/Mat3x4f.hpp>
-#include <RGLFields.hpp>
-
-#include <gtest/gtest.h>
-#include <gmock/gmock-matchers.h>
-
 #include <utils.hpp>
-#include <stdlib.h>
 
 struct RGLPointsNodeTestHelper {
+    
 protected:
     rgl_node_t usePointsNode = nullptr;
 
@@ -75,6 +67,18 @@ protected:
             }
         }
         return hitPoints;
+    }
+
+    rgl_node_t simulateEmptyPointCloud() {
+        createTestUsePointsNode(1, identityTestTransform, HitPointDensity::ALL_NON_HIT);
+        rgl_node_t compactNode = nullptr;
+        ASSERT_RGL_SUCCESS(rgl_node_points_compact(&compactNode));
+        ASSERT_RGL_SUCCESS(rgl_graph_node_add_child(usePointsNode, compactNode));
+        ASSERT_RGL_SUCCESS(rgl_graph_run(usePointsNode));
+
+        int32_t hitpointCount, pointSize;
+        ASSERT_RGL_SUCCESS(rgl_graph_get_result_size(compactNode, RGL_FIELD_XYZ_F32, &hitpointCount, &pointSize));
+        EXPECT_EQ(hitpointCount, 0);
     }
 
 private:
