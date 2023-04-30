@@ -8,7 +8,7 @@ The C API is built around several concepts introduced in the following chapter.
 
 ### Mesh
 
-Mesh is a handle for the on-GPU data of a 3D model provided by the user.
+A mesh is the on-GPU data handle of a 3D model provided by the user.
 
 ### Entity
 

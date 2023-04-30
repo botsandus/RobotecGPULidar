@@ -275,7 +275,7 @@ rgl_cleanup(void);
 /******************************** MESH ********************************/
 
 /**
- * Creates mesh from a vertex and index arrays. CW/CCW order does not matter.
+ * Creates mesh from the arrays of vertices and indices. CW/CCW order does not matter.
  * Provided arrays are copied to the GPU before this function returns.
  * @param out_mesh Address to store the resulting mesh handle
  * @param vertices An array of rgl_vec3f or binary-compatible data representing mesh vertices
