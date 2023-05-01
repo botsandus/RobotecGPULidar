@@ -71,7 +71,7 @@ add_library(RobotecGPULidar SHARED
     src/api/apiCore.cpp
     src/Tape.cpp
     src/Logger.cpp
-        src/Optix.cpp
+    src/Optix.cpp
     src/gpu/gaussianNoiseKernels.cu
     src/gpu/nodeKernels.cu
     src/scene/Scene.cpp
@@ -80,29 +80,30 @@ add_library(RobotecGPULidar SHARED
     src/scene/ASBuildScratchpad.cpp
     src/graph/GraphRunCtx.cpp
     src/graph/Node.cpp
-    src/graph/GaussianNoiseAngularHitpointNode.cpp
-    src/graph/GaussianNoiseAngularRayNode.cpp
-    src/graph/GaussianNoiseDistanceNode.cpp
-    src/graph/CompactPointsNode.cpp
-    src/graph/FormatPointsNode.cpp
-    src/graph/RaytraceNode.cpp
-    src/graph/TransformPointsNode.cpp
-    src/graph/TransformRaysNode.cpp
-    src/graph/FromArrayPointsNode.cpp
-    src/graph/FromMat3x4fRaysNode.cpp
-    src/graph/SetRaysRingIdsRaysNode.cpp
-    src/graph/SpatialMergePointsNode.cpp
-    src/graph/TemporalMergePointsNode.cpp
-    src/graph/YieldPointsNode.cpp)
+#    src/graph/GaussianNoiseAngularHitpointNode.cpp
+#    src/graph/GaussianNoiseAngularRayNode.cpp
+#    src/graph/GaussianNoiseDistanceNode.cpp
+#    src/graph/CompactPointsNode.cpp
+#    src/graph/FormatPointsNode.cpp
+#    src/graph/RaytraceNode.cpp
+#    src/graph/TransformPointsNode.cpp
+#    src/graph/TransformRaysNode.cpp
+#    src/graph/FromArrayPointsNode.cpp
+#    src/graph/FromMat3x4fRaysNode.cpp
+#    src/graph/SetRaysRingIdsRaysNode.cpp
+#    src/graph/SpatialMergePointsNode.cpp
+#    src/graph/TemporalMergePointsNode.cpp
+#    src/graph/YieldPointsNode.cpp
+)
 
 set_property(TARGET RobotecGPULidar PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 if (RGL_BUILD_PCL_EXTENSION)
     find_package(PCL 1.12 CONFIG REQUIRED COMPONENTS common io filters visualization)
     target_sources(RobotecGPULidar PRIVATE
-        src/api/apiPcl.cpp
-        src/graph/DownSamplePointsNode.cpp
-        src/graph/VisualizePointsNode.cpp
+#        src/api/apiPcl.cpp
+#        src/graph/DownSamplePointsNode.cpp
+#        src/graph/VisualizePointsNode.cpp
     )
     target_include_directories(RobotecGPULidar PUBLIC ${PCL_INCLUDE_DIRS})
     target_link_directories(RobotecGPULidar PRIVATE ${PCL_LIBRARY_DIRS})
@@ -116,9 +117,12 @@ if (RGL_BUILD_ROS2_EXTENSION OR RGL_BUILD_ROS2_EXTENSION_STANDALONE)
     endif()
     find_package(rclcpp REQUIRED)
     find_package(sensor_msgs REQUIRED)
-    target_sources(RobotecGPULidar PRIVATE src/api/apiRos2.cpp src/graph/Ros2PublishPointsNode.cpp)
+    target_sources(RobotecGPULidar PRIVATE
+#        src/api/apiRos2.cpp
+#        src/graph/Ros2PublishPointsNode.cpp
+    )
     target_include_directories(RobotecGPULidar PUBLIC ${rclcpp_INCLUDE_DIRS} ${sensor_msgs_INCLUDE_DIRS})
-    target_link_libraries(RobotecGPULidar PRIVATE ${rclcpp_LIBRARIES} ${sensor_msgs_LIBRARIES})
+#    target_link_libraries(RobotecGPULidar PRIVATE ${rclcpp_LIBRARIES} ${sensor_msgs_LIBRARIES})
     target_compile_definitions(RobotecGPULidar PUBLIC RGL_BUILD_ROS2_EXTENSION=$<BOOL:${RGL_BUILD_ROS2_EXTENSION}>)
 endif()
 

@@ -353,205 +353,205 @@ rgl_scene_set_time(rgl_scene_t scene, uint64_t nanoseconds);
 
 /******************************** NODES ********************************/
 
-/**
- * Creates or modifies FromMat3x4fRaysNode.
- * The node provides initial rays for its children nodes.
- * Initial rays are usually provided in device-local coordinate frame, i.e. close to (0, 0, 0).
- * Input: none
- * Output: rays
- * @param node If (*node) == nullptr, a new node will be created. Otherwise, (*node) will be modified.
- * @param rays Pointer to 3x4 affine matrices describing rays poses.
- * @param ray_count Size of the `rays` array
- */
-RGL_API rgl_status_t
-rgl_node_rays_from_mat3x4f(rgl_node_t* node, const rgl_mat3x4f* rays, int32_t ray_count);
-
-/**
- * Creates or modifies SetRingIdsRaysNode.
- * The node assigns ring ids for existing rays.
- * Input: rays
- * Output: rays
- * @param node If (*node) == nullptr, a new node will be created. Otherwise, (*node) will be modified.
- * @param ring_ids Pointer to ring ids.
- * @param ray_count Size of the `ring_ids` array.
- */
-RGL_API rgl_status_t
-rgl_node_rays_set_ring_ids(rgl_node_t* node, const int32_t* ring_ids, int32_t ring_ids_count);
-
-/**
- * Creates or modifies TransformRaysNode.
- * Effectively, the node performs the following operation for all rays: `outputRay[i] = (*transform) * inputRay[i]`
- * This function can be used to account for the pose of the device.
- * Graph input: rays
- * Graph output: rays
- * @param node If (*node) == nullptr, a new node will be created. Otherwise, (*node) will be modified.
- * @param transform Pointer to a single 3x4 affine matrix describing the transformation to be applied.
- */
-RGL_API rgl_status_t
-rgl_node_rays_transform(rgl_node_t* node, const rgl_mat3x4f* transform);
-
-// Applies affine transformation, e.g. to change the coordinate frame.
-/**
- * Creates or modifies TransformPointsNode.
- * The node applies affine transformation to all points.
- * It can be used to e.g. change coordinate frame after raytracing.
- * Note: affects only RGL_FIELD_XYZ_F32. Other fields are not modified.
- * Graph input: point cloud
- * Graph output: point cloud (transformed)
- * @param node If (*node) == nullptr, a new node will be created. Otherwise, (*node) will be modified.
- * @param transform Pointer to a single 3x4 affine matrix describing the transformation to be applied.
- */
-RGL_API rgl_status_t
-rgl_node_points_transform(rgl_node_t* node, const rgl_mat3x4f* transform);
-
-/**
- * Creates or modifies RaytraceNode.
- * The node performs GPU-accelerated raytracing on the given scene.
- * Fields to be computed will be automatically determined based on connected FormatNodes and YieldPointsNodes
- * Graph input: rays
- * Graph output: point cloud (sparse)
- * @param node If (*node) == nullptr, a new node will be created. Otherwise, (*node) will be modified.
- * @param scene Handle to a scene to perform raytracing on. Pass null to use the default scene
- * @param range Maximum distance to travel for every ray
- */
-RGL_API rgl_status_t
-rgl_node_raytrace(rgl_node_t* node, rgl_scene_t scene, float range);
-
-/**
- * Creates or modifies FormatPointsNode.
- * The node converts internal representation into a binary format defined by `fields` array.
- * Note: It is a user's responsibility to ensure proper data structure alignment. See (https://en.wikipedia.org/wiki/Data_structure_alignment).
- * Graph input: point cloud
- * Graph output: point cloud
- * @param node If (*node) == nullptr, a new node will be created. Otherwise, (*node) will be modified.
- * @param fields Subsequent fields to be present in the binary output
- * @param field_count Number of elements in the `fields` array
- */
-RGL_API rgl_status_t
-rgl_node_points_format(rgl_node_t* node, const rgl_field_t* fields, int32_t field_count);
-
-/**
- * Creates or modifies YieldPointsNode.
- * The node is a marker what fields are expected by the user.
- * Graph input: point cloud
- * Graph output: point cloud
- * @param node If (*node) == nullptr, a new node will be created. Otherwise, (*node) will be modified.
- * @param fields Subsequent fields expected to be available
- * @param field_count Number of elements in the `fields` array
- */
-RGL_API rgl_status_t
-rgl_node_points_yield(rgl_node_t* node, const rgl_field_t* fields, int32_t field_count);
-
-/**
- * Creates or modifies CompactPointsNode.
- * The node removes non-hit points. In other words, it converts a point cloud into a dense one.
- * Graph input: point cloud
- * Graph output: point cloud (compacted)
- * @param node If (*node) == nullptr, a new node will be created. Otherwise, (*node) will be modified.
- */
-RGL_API rgl_status_t
-rgl_node_points_compact(rgl_node_t* node);
-
-/**
- * Creates or modifies SpatialMergePointsNode.
- * The node merges point clouds spatially (e.g., multiple lidars outputs into one point cloud).
- * Only provided fields are merged (RGL_FIELD_DYNAMIC_FORMAT is not supported).
- * Input point clouds must be unorganized (height == 1).
- * Any modification to the node's parameters clears accumulated data.
- * Graph input: point cloud(s)
- * Graph output: point cloud
- * @param node If (*node) == nullptr, a new node will be created. Otherwise, (*node) will be modified.
- * @param fields Fields to be merged.
- * @param field_count Number of elements in the `fields` array.
- */
-RGL_API rgl_status_t
-rgl_node_points_spatial_merge(rgl_node_t* node, const rgl_field_t* fields, int32_t field_count);
-
-/**
- * Creates or modifies TemporalMergePointsNode.
- * The node accumulates (performs temporal merge on) point clouds on each run.
- * Only provided fields are merged (RGL_FIELD_DYNAMIC_FORMAT is not supported).
- * Input point cloud must be unorganized (height == 1).
- * Any modification to the node's parameters clears accumulated data.
- * Graph input: point cloud
- * Graph output: point cloud
- * @param node If (*node) == nullptr, a new node will be created. Otherwise, (*node) will be modified.
- * @param fields Fields to be merged.
- * @param field_count Number of elements in the `fields` array.
- */
-RGL_API rgl_status_t
-rgl_node_points_temporal_merge(rgl_node_t* node, const rgl_field_t* fields, int32_t field_count);
-
-/**
- * Creates or modifies FromArrayPointsNode.
- * The node provides initial points for its children nodes.
- * Input: none
- * Output: point cloud
- * @param node If (*node) == nullptr, a new node will be created. Otherwise, (*node) will be modified.
- * @param points Pointer to the array of points. Point is represented as a structure composed of fields.
- * See RGLFields.hpp (https://github.com/RobotecAI/RobotecGPULidar/blob/main/src/RGLFields.hpp).
- * Example of that structure:
- * struct ExamplePoint
- * {
- *   Field<XYZ_F32>::type xyz;
- *   Field<PADDING_32>::type padding;
- *   Field<IS_HIT_I32>::type isHit;
- *   Field<INTENSITY_F32>::type intensity;
- * };
- * @param points_count Number of elements in the `points` array.
- * @param rgl_field_t Subsequent fields to be present in the binary input.
- * @param field_count Number of elements in the `fields` array.
- */
-RGL_API rgl_status_t
-rgl_node_points_from_array(rgl_node_t* node, const void* points, int32_t points_count, const rgl_field_t* fields, int32_t field_count);
-
-/**
- * Creates or modifies GaussianNoiseAngularRaysNode.
- * Applies angular noise to the rays before raycasting.
- * See documentation: https://github.com/RobotecAI/RobotecGPULidar/blob/main/docs/GaussianNoise.md#ray-based-angular-noise
- * Graph input: rays
- * Graph output: rays
- * @param node If (*node) == nullptr, a new node will be created. Otherwise, (*node) will be modified.
- * @param mean Angular noise mean in radians.
- * @param st_dev Angular noise standard deviation in radians.
- * @param axis Axis on which angular noise will be perform.
- */
-RGL_API rgl_status_t
-rgl_node_gaussian_noise_angular_ray(rgl_node_t* node, float mean, float st_dev, rgl_axis_t rotation_axis);
-
-/**
- * Creates or modifies GaussianNoiseAngularHitpointNode.
- * Adds angular noise to already computed hitpoints.
- * Note: affects on RGL_FIELD_XYZ_F32 and RGL_DISTANCE_F32.
- * Should be used after raytrace node.
- * Using this noise after nodes that modify XYZ (e.g. points_transform, points_downsample) may cause incorrect values in fields other than RGL_FIELD_XYZ_F32.
- * See documentation: https://github.com/RobotecAI/RobotecGPULidar/blob/main/docs/GaussianNoise.md#hitpoint-based-angular-noise
- * Graph input: point cloud
- * Graph output: point cloud
- * @param node If (*node) == nullptr, a new node will be created. Otherwise, (*node) will be modified.
- * @param mean Angular noise mean in radians.
- * @param st_dev Angular noise standard deviation in radians.
- * @param axis Axis on which angular noise will be perform.
- */
-RGL_API rgl_status_t
-rgl_node_gaussian_noise_angular_hitpoint(rgl_node_t* node, float mean, float st_dev, rgl_axis_t rotation_axis);
-
-/**
- * Creates or modifies GaussianNoiseDistanceNode.
- * Changes the distance between hitpoint and lidar's origin.
- * Note: affects on RGL_FIELD_XYZ_F32 and RGL_DISTANCE_F32.
- * Should be used after raytrace node.
- * Using this noise after nodes that modify XYZ (e.g. points_transform, points_downsample) may cause incorrect values in fields other than RGL_FIELD_XYZ_F32.
- * See documentation: https://github.com/RobotecAI/RobotecGPULidar/blob/main/docs/GaussianNoise.md#distance-noise
- * Graph input: point cloud
- * Graph output: point cloud
- * @param node If (*node) == nullptr, a new node will be created. Otherwise, (*node) will be modified.
- * @param mean Distance noise mean in meters.
- * @param st_dev_base Distance noise standard deviation base in meters.
- * @param st_dev_rise_per_meter Distance noise standard deviation rise per meter.
- */
-RGL_API rgl_status_t
-rgl_node_gaussian_noise_distance(rgl_node_t* node, float mean, float st_dev_base, float st_dev_rise_per_meter);
+///**
+// * Creates or modifies FromMat3x4fRaysNode.
+// * The node provides initial rays for its children nodes.
+// * Initial rays are usually provided in device-local coordinate frame, i.e. close to (0, 0, 0).
+// * Input: none
+// * Output: rays
+// * @param node If (*node) == nullptr, a new node will be created. Otherwise, (*node) will be modified.
+// * @param rays Pointer to 3x4 affine matrices describing rays poses.
+// * @param ray_count Size of the `rays` array
+// */
+//RGL_API rgl_status_t
+//rgl_node_rays_from_mat3x4f(rgl_node_t* node, const rgl_mat3x4f* rays, int32_t ray_count);
+//
+///**
+// * Creates or modifies SetRingIdsRaysNode.
+// * The node assigns ring ids for existing rays.
+// * Input: rays
+// * Output: rays
+// * @param node If (*node) == nullptr, a new node will be created. Otherwise, (*node) will be modified.
+// * @param ring_ids Pointer to ring ids.
+// * @param ray_count Size of the `ring_ids` array.
+// */
+//RGL_API rgl_status_t
+//rgl_node_rays_set_ring_ids(rgl_node_t* node, const int32_t* ring_ids, int32_t ring_ids_count);
+//
+///**
+// * Creates or modifies TransformRaysNode.
+// * Effectively, the node performs the following operation for all rays: `outputRay[i] = (*transform) * inputRay[i]`
+// * This function can be used to account for the pose of the device.
+// * Graph input: rays
+// * Graph output: rays
+// * @param node If (*node) == nullptr, a new node will be created. Otherwise, (*node) will be modified.
+// * @param transform Pointer to a single 3x4 affine matrix describing the transformation to be applied.
+// */
+//RGL_API rgl_status_t
+//rgl_node_rays_transform(rgl_node_t* node, const rgl_mat3x4f* transform);
+//
+//// Applies affine transformation, e.g. to change the coordinate frame.
+///**
+// * Creates or modifies TransformPointsNode.
+// * The node applies affine transformation to all points.
+// * It can be used to e.g. change coordinate frame after raytracing.
+// * Note: affects only RGL_FIELD_XYZ_F32. Other fields are not modified.
+// * Graph input: point cloud
+// * Graph output: point cloud (transformed)
+// * @param node If (*node) == nullptr, a new node will be created. Otherwise, (*node) will be modified.
+// * @param transform Pointer to a single 3x4 affine matrix describing the transformation to be applied.
+// */
+//RGL_API rgl_status_t
+//rgl_node_points_transform(rgl_node_t* node, const rgl_mat3x4f* transform);
+//
+///**
+// * Creates or modifies RaytraceNode.
+// * The node performs GPU-accelerated raytracing on the given scene.
+// * Fields to be computed will be automatically determined based on connected FormatNodes and YieldPointsNodes
+// * Graph input: rays
+// * Graph output: point cloud (sparse)
+// * @param node If (*node) == nullptr, a new node will be created. Otherwise, (*node) will be modified.
+// * @param scene Handle to a scene to perform raytracing on. Pass null to use the default scene
+// * @param range Maximum distance to travel for every ray
+// */
+//RGL_API rgl_status_t
+//rgl_node_raytrace(rgl_node_t* node, rgl_scene_t scene, float range);
+//
+///**
+// * Creates or modifies FormatPointsNode.
+// * The node converts internal representation into a binary format defined by `fields` array.
+// * Note: It is a user's responsibility to ensure proper data structure alignment. See (https://en.wikipedia.org/wiki/Data_structure_alignment).
+// * Graph input: point cloud
+// * Graph output: point cloud
+// * @param node If (*node) == nullptr, a new node will be created. Otherwise, (*node) will be modified.
+// * @param fields Subsequent fields to be present in the binary output
+// * @param field_count Number of elements in the `fields` array
+// */
+//RGL_API rgl_status_t
+//rgl_node_points_format(rgl_node_t* node, const rgl_field_t* fields, int32_t field_count);
+//
+///**
+// * Creates or modifies YieldPointsNode.
+// * The node is a marker what fields are expected by the user.
+// * Graph input: point cloud
+// * Graph output: point cloud
+// * @param node If (*node) == nullptr, a new node will be created. Otherwise, (*node) will be modified.
+// * @param fields Subsequent fields expected to be available
+// * @param field_count Number of elements in the `fields` array
+// */
+//RGL_API rgl_status_t
+//rgl_node_points_yield(rgl_node_t* node, const rgl_field_t* fields, int32_t field_count);
+//
+///**
+// * Creates or modifies CompactPointsNode.
+// * The node removes non-hit points. In other words, it converts a point cloud into a dense one.
+// * Graph input: point cloud
+// * Graph output: point cloud (compacted)
+// * @param node If (*node) == nullptr, a new node will be created. Otherwise, (*node) will be modified.
+// */
+//RGL_API rgl_status_t
+//rgl_node_points_compact(rgl_node_t* node);
+//
+///**
+// * Creates or modifies SpatialMergePointsNode.
+// * The node merges point clouds spatially (e.g., multiple lidars outputs into one point cloud).
+// * Only provided fields are merged (RGL_FIELD_DYNAMIC_FORMAT is not supported).
+// * Input point clouds must be unorganized (height == 1).
+// * Any modification to the node's parameters clears accumulated data.
+// * Graph input: point cloud(s)
+// * Graph output: point cloud
+// * @param node If (*node) == nullptr, a new node will be created. Otherwise, (*node) will be modified.
+// * @param fields Fields to be merged.
+// * @param field_count Number of elements in the `fields` array.
+// */
+//RGL_API rgl_status_t
+//rgl_node_points_spatial_merge(rgl_node_t* node, const rgl_field_t* fields, int32_t field_count);
+//
+///**
+// * Creates or modifies TemporalMergePointsNode.
+// * The node accumulates (performs temporal merge on) point clouds on each run.
+// * Only provided fields are merged (RGL_FIELD_DYNAMIC_FORMAT is not supported).
+// * Input point cloud must be unorganized (height == 1).
+// * Any modification to the node's parameters clears accumulated data.
+// * Graph input: point cloud
+// * Graph output: point cloud
+// * @param node If (*node) == nullptr, a new node will be created. Otherwise, (*node) will be modified.
+// * @param fields Fields to be merged.
+// * @param field_count Number of elements in the `fields` array.
+// */
+//RGL_API rgl_status_t
+//rgl_node_points_temporal_merge(rgl_node_t* node, const rgl_field_t* fields, int32_t field_count);
+//
+///**
+// * Creates or modifies FromArrayPointsNode.
+// * The node provides initial points for its children nodes.
+// * Input: none
+// * Output: point cloud
+// * @param node If (*node) == nullptr, a new node will be created. Otherwise, (*node) will be modified.
+// * @param points Pointer to the array of points. Point is represented as a structure composed of fields.
+// * See RGLFields.hpp (https://github.com/RobotecAI/RobotecGPULidar/blob/main/src/RGLFields.hpp).
+// * Example of that structure:
+// * struct ExamplePoint
+// * {
+// *   Field<XYZ_F32>::type xyz;
+// *   Field<PADDING_32>::type padding;
+// *   Field<IS_HIT_I32>::type isHit;
+// *   Field<INTENSITY_F32>::type intensity;
+// * };
+// * @param points_count Number of elements in the `points` array.
+// * @param rgl_field_t Subsequent fields to be present in the binary input.
+// * @param field_count Number of elements in the `fields` array.
+// */
+//RGL_API rgl_status_t
+//rgl_node_points_from_array(rgl_node_t* node, const void* points, int32_t points_count, const rgl_field_t* fields, int32_t field_count);
+//
+///**
+// * Creates or modifies GaussianNoiseAngularRaysNode.
+// * Applies angular noise to the rays before raycasting.
+// * See documentation: https://github.com/RobotecAI/RobotecGPULidar/blob/main/docs/GaussianNoise.md#ray-based-angular-noise
+// * Graph input: rays
+// * Graph output: rays
+// * @param node If (*node) == nullptr, a new node will be created. Otherwise, (*node) will be modified.
+// * @param mean Angular noise mean in radians.
+// * @param st_dev Angular noise standard deviation in radians.
+// * @param axis Axis on which angular noise will be perform.
+// */
+//RGL_API rgl_status_t
+//rgl_node_gaussian_noise_angular_ray(rgl_node_t* node, float mean, float st_dev, rgl_axis_t rotation_axis);
+//
+///**
+// * Creates or modifies GaussianNoiseAngularHitpointNode.
+// * Adds angular noise to already computed hitpoints.
+// * Note: affects on RGL_FIELD_XYZ_F32 and RGL_DISTANCE_F32.
+// * Should be used after raytrace node.
+// * Using this noise after nodes that modify XYZ (e.g. points_transform, points_downsample) may cause incorrect values in fields other than RGL_FIELD_XYZ_F32.
+// * See documentation: https://github.com/RobotecAI/RobotecGPULidar/blob/main/docs/GaussianNoise.md#hitpoint-based-angular-noise
+// * Graph input: point cloud
+// * Graph output: point cloud
+// * @param node If (*node) == nullptr, a new node will be created. Otherwise, (*node) will be modified.
+// * @param mean Angular noise mean in radians.
+// * @param st_dev Angular noise standard deviation in radians.
+// * @param axis Axis on which angular noise will be perform.
+// */
+//RGL_API rgl_status_t
+//rgl_node_gaussian_noise_angular_hitpoint(rgl_node_t* node, float mean, float st_dev, rgl_axis_t rotation_axis);
+//
+///**
+// * Creates or modifies GaussianNoiseDistanceNode.
+// * Changes the distance between hitpoint and lidar's origin.
+// * Note: affects on RGL_FIELD_XYZ_F32 and RGL_DISTANCE_F32.
+// * Should be used after raytrace node.
+// * Using this noise after nodes that modify XYZ (e.g. points_transform, points_downsample) may cause incorrect values in fields other than RGL_FIELD_XYZ_F32.
+// * See documentation: https://github.com/RobotecAI/RobotecGPULidar/blob/main/docs/GaussianNoise.md#distance-noise
+// * Graph input: point cloud
+// * Graph output: point cloud
+// * @param node If (*node) == nullptr, a new node will be created. Otherwise, (*node) will be modified.
+// * @param mean Distance noise mean in meters.
+// * @param st_dev_base Distance noise standard deviation base in meters.
+// * @param st_dev_rise_per_meter Distance noise standard deviation rise per meter.
+// */
+//RGL_API rgl_status_t
+//rgl_node_gaussian_noise_distance(rgl_node_t* node, float mean, float st_dev_base, float st_dev_rise_per_meter);
 
 /******************************** GRAPH ********************************/
 

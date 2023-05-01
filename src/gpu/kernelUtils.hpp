@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#pragma once
+
 #include <macros/cuda.hpp>
 
 #define LIMIT(count) const int tid = (blockIdx.x * blockDim.x + threadIdx.x); do {if (tid >= count) { return; }} while(false)
