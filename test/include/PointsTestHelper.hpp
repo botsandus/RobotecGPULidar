@@ -1,4 +1,9 @@
 #include <utils.hpp>
+#include <random>
+
+static std::random_device randomDevice;
+static auto randomSeed = randomDevice();
+static std::mt19937 randomGenerator {randomSeed};
 
 struct RGLPointsNodeTestHelper {
     
@@ -11,9 +16,19 @@ protected:
         INTENSITY_F32
     };
 
+    std::vector<rgl_field_t> pointFieldsWithoutIsHit = {
+        XYZ_F32,
+        INTENSITY_F32
+    };
+
     struct TestPointStruct {
         Field<XYZ_F32>::type xyz;
         Field<IS_HIT_I32>::type isHit;
+        Field<INTENSITY_F32>::type intensity;
+    };
+
+    struct TestPointStructWithoutIsHit {
+        Field<XYZ_F32>::type xyz;
         Field<INTENSITY_F32>::type intensity;
     };
 
@@ -48,6 +63,24 @@ protected:
         return points;
     }
 
+    //TODO(nebraszka): To be changed so as not to duplicate the code
+    std::vector<TestPointStructWithoutIsHit> generateTestPointsArrayWithoutIsHit(
+        int count,
+        rgl_mat3x4f transform = identityTestTransform
+    )
+    {
+        std::vector<TestPointStructWithoutIsHit> points;
+
+        for (int i = 0; i < count; ++i) {
+            auto currentPoint = TestPointStructWithoutIsHit {
+                .xyz = { i, i + 1, i + 2 },
+                .intensity = 100 };
+            currentPoint.xyz = Mat3x4f::fromRGL(transform) * currentPoint.xyz;
+            points.emplace_back(currentPoint);
+        }
+        return points;
+    }
+
     void createTestUsePointsNode(
             int pointsCount,
             rgl_mat3x4f transform = identityTestTransform,
@@ -69,16 +102,13 @@ protected:
         return hitPoints;
     }
 
-    rgl_node_t simulateEmptyPointCloud() {
+    rgl_node_t simulateEmptyPointCloudInputNode() {
         createTestUsePointsNode(1, identityTestTransform, HitPointDensity::ALL_NON_HIT);
         rgl_node_t compactNode = nullptr;
-        ASSERT_RGL_SUCCESS(rgl_node_points_compact(&compactNode));
-        ASSERT_RGL_SUCCESS(rgl_graph_node_add_child(usePointsNode, compactNode));
-        ASSERT_RGL_SUCCESS(rgl_graph_run(usePointsNode));
+        EXPECT_RGL_SUCCESS(rgl_node_points_compact(&compactNode));
+        EXPECT_RGL_SUCCESS(rgl_graph_node_add_child(usePointsNode, compactNode));
 
-        int32_t hitpointCount, pointSize;
-        ASSERT_RGL_SUCCESS(rgl_graph_get_result_size(compactNode, RGL_FIELD_XYZ_F32, &hitpointCount, &pointSize));
-        EXPECT_EQ(hitpointCount, 0);
+        return compactNode;
     }
 
 private:
@@ -92,13 +122,14 @@ private:
                 return 1;
             case HitPointDensity::RANDOM:
             {
-                int isHit = rand() % 2;
+                int isHit = randomGenerator() % 2;
                 if(!isHit) {
                     randomNonHitCount++;
                 }
                 return isHit;
             }
+            default:
+                return 0;
         }
     }
-
 };
