@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 #include <PointsTestHelper.hpp>
 #include <RaysTestHelper.hpp>
+#include <PointsTestGenerator.hpp>
 
 class CompactPointsNodeTest : public RGLTestWithParam<int>, public RGLPointsNodeTestHelper, public RGLRaysNodeTestHelper{
 protected:
@@ -203,3 +204,19 @@ TEST_F(CompactPointsNodeTest, without_IS_HIT_field)
     EXPECT_RGL_INVALID_PIPELINE(rgl_graph_run(compactNode), "IS_HIT_I32");
 }
 
+// In progress
+
+TEST_F(CompactPointsNodeTest, points_generator_test)
+{
+    RGLPointsHelper helper;
+    auto points = helper.generatePoints<RGLPointsHelper::xyzType, RGLPointsHelper::isHitType>(5);
+
+    //Print the generated points
+    for (const auto &point : points) {
+        const auto &xyz = std::get<0>(point.fields);
+        const auto &isHit = std::get<1>(point.fields);
+        std::cerr << "), isHit: " << isHit << '\n';
+    }
+
+    SUCCEED();
+}
