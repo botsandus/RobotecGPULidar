@@ -190,6 +190,7 @@ typedef enum
 	RGL_FIELD_RING_ID_U16,
 	RGL_FIELD_RETURN_TYPE_U8,
 	RGL_FIELD_TIME_STAMP_F64,
+	RGL_FIELD_LASER_RETRO_F32,
 	// Dummy fields
 	RGL_FIELD_PADDING_8 = 1024,
 	RGL_FIELD_PADDING_16,
@@ -307,6 +308,15 @@ rgl_entity_destroy(rgl_entity_t entity);
  */
 RGL_API rgl_status_t
 rgl_entity_set_pose(rgl_entity_t entity, const rgl_mat3x4f *local_to_world_tf);
+
+
+/**
+ * Set laser retro value for the given entity.
+ * @param entity Entity to modify
+ * @param int laser retrovalue to set. If not set,it will be set to 100.0.
+ */
+RGL_API rgl_status_t
+rgl_entity_set_laser_retro(rgl_entity_t entity, float retro);
 
 /******************************** NODES ********************************/
 

@@ -19,11 +19,20 @@ API_OBJECT_INSTANCE(Entity);
 Entity::Entity(std::shared_ptr<Mesh> mesh, std::optional<std::string> name)
 : mesh(std::move(mesh))
 , transform(Mat3x4f::identity())
-, humanReadableName(std::move(name)) { }
+, humanReadableName(std::move(name))
+, laser_retro(DEFAULT_LASER_RETRO) { }
 
 void Entity::setTransform(Mat3x4f newTransform)
 {
 	transform = newTransform;
+	if (auto activeScene = scene.lock()) {
+		activeScene->requestASRebuild();
+	}
+}
+
+void Entity::setLaserRetro(float retro)
+{
+	laser_retro = retro;
 	if (auto activeScene = scene.lock()) {
 		activeScene->requestASRebuild();
 	}
