@@ -446,7 +446,6 @@ void TapePlay::tape_entity_set_laser_retro(const YAML::Node& yamlNode)
 					  yamlNode[1].as<Field<LASER_RETRO_F32>::type>());
 }
 
-
 RGL_API rgl_status_t
 rgl_graph_run(rgl_node_t node)
 {
