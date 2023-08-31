@@ -20,6 +20,7 @@
 #include <utility>
 #include <math/Mat3x4f.hpp>
 
+constexpr float DEFAULT_LASER_RETRO = 100.0;
 
 struct Entity : APIObject<Entity>
 {
@@ -28,11 +29,13 @@ struct Entity : APIObject<Entity>
 	// TODO(prybicki): low-prio optimization: do not rebuild whole IAS if only transform changed
 	void setTransform(Mat3x4f newTransform);
 	OptixInstance getIAS(int idx);
-
+	void setLaserRetro(float retro);
+	const float getLaserRetro() { return laser_retro;}
 	std::shared_ptr<Mesh> mesh;
 	std::weak_ptr<Scene> scene;
 private:
 	Mat3x4f transform;
+	float laser_retro;
 	std::optional<std::string> humanReadableName;
 	friend struct APIObject<Entity>;
 	friend struct Scene;

@@ -428,6 +428,25 @@ void TapePlay::tape_entity_set_pose(const YAML::Node& yamlNode)
 }
 
 RGL_API rgl_status_t
+rgl_entity_set_laser_retro(rgl_entity_t entity, float retro)
+{
+	auto status = rglSafeCall([&]() {
+		RGL_API_LOG("rgl_entity_set_laser_retro(entity={}, retro={})", (void *) entity, retro);
+		CHECK_ARG(entity != nullptr);
+		CHECK_ARG(retro > 0);
+		Entity::validatePtr(entity)->setLaserRetro(retro);
+	});
+	TAPE_HOOK(entity, retro);
+	return status;
+}
+
+void TapePlay::tape_entity_set_laser_retro(const YAML::Node& yamlNode)
+{
+	rgl_entity_set_laser_retro(tapeEntities[yamlNode[0].as<size_t>()],
+					  yamlNode[1].as<Field<LASER_RETRO_F32>::type>());
+}
+
+RGL_API rgl_status_t
 rgl_graph_run(rgl_node_t node)
 {
 	auto status = rglSafeCall([&]() {

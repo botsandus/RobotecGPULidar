@@ -23,6 +23,8 @@
 #include <gpu/RaytraceRequestContext.hpp>
 #include <gpu/ShaderBindingTableTypes.h>
 
+#define DEFAULT_LASER_RETRO 100.0
+
 extern "C" static __constant__ RaytraceRequestContext ctx;
 
 struct Vec3fPayload
@@ -54,7 +56,7 @@ Vec3f decodePayloadVec3f(const Vec3fPayload& src)
 
 template<bool isFinite>
 __forceinline__ __device__
-void saveRayResult(const Vec3f* xyz=nullptr, const Vec3f* origin=nullptr)
+void saveRayResult(const Vec3f* xyz=nullptr, const Vec3f* origin=nullptr, const float retro = DEFAULT_LASER_RETRO)
 {
 	const int rayIdx = optixGetLaunchIndex().x;
 	if (ctx.xyz != nullptr) {
@@ -80,6 +82,9 @@ void saveRayResult(const Vec3f* xyz=nullptr, const Vec3f* origin=nullptr)
 	}
 	if (ctx.intensity != nullptr) {
 		ctx.intensity[rayIdx] = 100;
+	}
+	if (ctx.laserRetro != nullptr) {
+		ctx.laserRetro[rayIdx] = isFinite? retro : 0.0;
 	}
 }
 
@@ -121,12 +126,14 @@ extern "C" __global__ void __closesthit__()
 	Vec3f hitObject = Vec3f((1 - u - v) * A + u * B + v * C);
 	Vec3f hitWorld = optixTransformPointFromObjectToWorldSpace(hitObject);
 
+	float retro = sbtData.laser_retro;
+
 	Vec3f origin = decodePayloadVec3f({
 		optixGetPayload_0(),
 		optixGetPayload_1(),
 		optixGetPayload_2()
 	});
-	saveRayResult<true>(&hitWorld, &origin);
+	saveRayResult<true>(&hitWorld, &origin, retro);
 }
 
 extern "C" __global__ void __miss__()

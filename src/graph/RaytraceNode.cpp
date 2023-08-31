@@ -59,6 +59,7 @@ void RaytraceNode::schedule(cudaStream_t stream)
 		.ringIdx = getPtrTo<RING_ID_U16>(),
 		.distance = getPtrTo<DISTANCE_F32>(),
 		.intensity = getPtrTo<INTENSITY_F32>(),
+		.laserRetro = getPtrTo<LASER_RETRO_F32>(),
 	};
 
 	CUdeviceptr pipelineArgsPtr = requestCtx->getCUdeviceptr();
