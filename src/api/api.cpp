@@ -433,7 +433,6 @@ rgl_entity_set_laser_retro(rgl_entity_t entity, float retro)
 	auto status = rglSafeCall([&]() {
 		RGL_API_LOG("rgl_entity_set_laser_retro(entity={}, retro={})", (void *) entity, retro);
 		CHECK_ARG(entity != nullptr);
-		CHECK_ARG(retro > 0);
 		Entity::validatePtr(entity)->setLaserRetro(retro);
 	});
 	TAPE_HOOK(entity, retro);
