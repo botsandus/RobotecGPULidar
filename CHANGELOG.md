@@ -1,6 +1,6 @@
 # Change Log
 
-## [Unreleased]
+## [0.22.0] 29 May 2026
 
 ### Added
 
