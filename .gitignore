@@ -39,6 +39,8 @@ Testing/*
 cmake-build-debug
 cmake-build-release
 build
+build-*
+*.pcd
 external/*
 !external/CMakeLists.txt
 extensions/udp
