@@ -5,6 +5,8 @@ The extension introduces nodes to publish [PointCloud2](https://docs.ros2.org/fo
 Supported ROS2 distributions:
 - Humble
 - Jazzy
+- Kilted
+- Lyrical
 
 Supported DDS implementations for ROS2 standalone build:
 - Eclipse Cyclone DDS
@@ -20,14 +22,15 @@ RGL ROS2 extension can be built in two flavors:
 Before building RGL ROS2 extension, it is necessary to get the required dependencies.
 For some, the process has been automated - run `setup.py --install-ros2-deps` to get them.
 
-### Ubuntu 22/24
+### Ubuntu 22/24/26
 
 #### Prerequisites
 
-- Requirements listed in the main [README](../README.md#building-on-ubuntu-2224).
+- Requirements listed in the main [README](../README.md#building-on-ubuntu-222426).
 - ROS2 installed on the system and sourced:
   - ROS2 Humble for Ubuntu 22
   - ROS2 Jazzy for Ubuntu 24
+  - ROS2 Lyrical for Ubuntu 26
 - Radar messages installed:
   ```bash
   apt install -y ros-${ROS_DISTRO}-radar-msgs

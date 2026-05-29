@@ -183,6 +183,17 @@ def main():
                 rpath = rpath.replace("$ORIGIN", "\\$ORIGIN")  # cmake should not treat this as variable
                 linker_rpath_flags.append(f"-Wl,-rpath={rpath}")
         cmake_args.append(f"-DCMAKE_SHARED_LINKER_FLAGS=\"{' '.join(linker_rpath_flags)}\"")
+        # On distros whose default compiler is too new for the installed CUDA toolkit
+        # (e.g. Ubuntu 26.04 ships GCC 15 while CUDA 12.x nvcc supports GCC <= 13), build the
+        # CUDA device code with a compatible host compiler, while keeping the default toolchain's
+        # (newer) libstdc++ ahead at link time so it stays compatible with system/ROS2 libraries.
+        cuda_host_compiler, host_cxx_lib_dir = find_compatible_cuda_host_compiler()
+        if cuda_host_compiler is not None:
+            print(f"Default host compiler is incompatible with the installed nvcc; "
+                  f"using '{cuda_host_compiler}' for CUDA device compilation.")
+            cmake_args.append(f"-DCMAKE_CUDA_HOST_COMPILER={cuda_host_compiler}")
+            if host_cxx_lib_dir is not None:
+                cmake_args.append(f"-DCMAKE_EXE_LINKER_FLAGS=-L{host_cxx_lib_dir}")
         # Taped test
         cmake_args.append(f"-DRGL_BUILD_TAPED_TESTS={'ON' if args.build_taped_test else 'OFF'}")
 
@@ -240,6 +251,59 @@ def is_cuda_version_ok(cfg):
         if actual < expected:
             return False
     return True
+
+
+def find_compatible_cuda_host_compiler():
+    """If the default host compiler is rejected by the installed nvcc, return a tuple of
+    (path to a compatible g++, directory of the default compiler's libstdc++). This lets CUDA
+    device code build with a supported compiler while the rest of the toolchain (and the newer
+    libstdc++ it needs, e.g. for ROS2 libraries) is still used at link time. Returns
+    (None, None) when the default compiler already works or no compatible compiler is found."""
+    if not on_linux():
+        return None, None
+
+    import tempfile
+
+    def nvcc_accepts(compiler):
+        with tempfile.TemporaryDirectory() as tmp:
+            src = os.path.join(tmp, "probe.cu")
+            with open(src, "w") as probe_file:
+                probe_file.write("__global__ void probe_kernel() {}\n")
+            cmd = ["nvcc", "-c", src, "-o", os.path.join(tmp, "probe.o")]
+            if compiler is not None:
+                cmd += ["-ccbin", compiler]
+            return subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0
+
+    # Probe the system's default C++ compiler explicitly. If nvcc accepts it, no override is
+    # needed (e.g. Ubuntu 22/24, or CUDA 13+ which supports GCC 15). We pass the resolved path
+    # rather than relying on nvcc's built-in default, which on some distros (e.g. Ubuntu's
+    # nvidia-cuda-toolkit) is silently remapped to a compatible gcc and would hide the mismatch.
+    default_host = shutil.which("c++") or shutil.which("g++")
+    if nvcc_accepts(default_host):
+        return None, None
+
+    # Find the newest installed g++ that nvcc accepts.
+    compatible = None
+    for major in range(20, 7, -1):
+        candidate = shutil.which(f"g++-{major}")
+        if candidate is not None and nvcc_accepts(candidate):
+            compatible = candidate
+            break
+    if compatible is None:
+        return None, None
+
+    # Directory of the default compiler's libstdc++, to keep it ahead of the (older) one
+    # pulled in by the CUDA host compiler at link time.
+    host_cxx_lib_dir = None
+    try:
+        lib_path = subprocess.run(["g++", "-print-file-name=libstdc++.so"],
+                                  capture_output=True, text=True).stdout.strip()
+        if lib_path and os.path.isdir(os.path.dirname(lib_path)):
+            host_cxx_lib_dir = os.path.dirname(lib_path)
+    except Exception:
+        host_cxx_lib_dir = None
+
+    return compatible, host_cxx_lib_dir
 
 
 # Returns a dict with env variables visible for a command after running in a system shell

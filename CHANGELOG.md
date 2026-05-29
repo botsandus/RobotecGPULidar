@@ -1,5 +1,17 @@
 # Change Log
 
+## [Unreleased]
+
+### Added
+
+- Added support for Ubuntu 26.04 and ROS 2 Lyrical (Kilted is also accepted now), in addition to Humble and Jazzy
+- Added support for building against NVIDIA OptiX 8.x and 9.x (previously OptiX 7.2 only)
+  - `optixModuleCreateFromPTX` and the removed `OptixPipelineLinkOptions::debugLevel` field are now guarded by `OPTIX_VERSION`, so the code compiles against OptiX 7.2 as well as 8.x/9.x
+
+### Changed
+
+- `setup.py` now automatically selects a compatible CUDA host compiler on Linux when the system default compiler is newer than the installed CUDA toolkit supports (e.g. GCC 15 on Ubuntu 26.04 with CUDA 12.x), and keeps the system `libstdc++` ahead at link time
+
 ## [0.21.0] 16 March 2026
 
 ### Added

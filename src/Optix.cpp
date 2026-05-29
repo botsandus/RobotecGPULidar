@@ -203,15 +203,23 @@ void Optix::initializeStaticOptixStructures()
 
 	OptixPipelineLinkOptions pipelineLinkOptions = {
 	    .maxTraceDepth = 4, // it is required to handle recasting rays safely in entity skip feature
-#ifdef NDEBUG
+#if OPTIX_VERSION < 70700 // OptixPipelineLinkOptions::debugLevel was removed in OptiX 7.7
+#  ifdef NDEBUG
 	    .debugLevel = OPTIX_COMPILE_DEBUG_LEVEL_NONE,
-#else
+#  else
 	    .debugLevel = OPTIX_COMPILE_DEBUG_LEVEL_FULL,
+#  endif
 #endif
 	};
 
+	// optixModuleCreateFromPTX was renamed to optixModuleCreate in OptiX 7.7 (old name removed in OptiX 8.0)
+#if OPTIX_VERSION >= 70700
+	CHECK_OPTIX(optixModuleCreate(context, &moduleCompileOptions, &pipelineCompileOptions, optixProgramsPtx,
+	                              strlen(optixProgramsPtx), nullptr, nullptr, &module));
+#else
 	CHECK_OPTIX(optixModuleCreateFromPTX(context, &moduleCompileOptions, &pipelineCompileOptions, optixProgramsPtx,
 	                                     strlen(optixProgramsPtx), nullptr, nullptr, &module));
+#endif
 
 	OptixProgramGroupOptions pgOptions = {};
 	OptixProgramGroupDesc raygenDesc = {

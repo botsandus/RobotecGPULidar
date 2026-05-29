@@ -268,7 +268,8 @@ if(ROS_DISTRO STREQUAL "humble")
     list(APPEND ros2_standalone_libs yaml)
 endif()
 
-if(ROS_DISTRO STREQUAL "jazzy")
+# Jazzy and the newer distros (Kilted, Lyrical) share the same set of required standalone libraries
+if(ROS_DISTRO STREQUAL "jazzy" OR ROS_DISTRO STREQUAL "kilted" OR ROS_DISTRO STREQUAL "lyrical")
     list(APPEND ros2_standalone_libs rcl_logging_spdlog rcl_interfaces rosidl_dynamic_typesupport_fastrtps)
     if(WIN32)
         list(APPEND ros2_standalone_libs yaml spdlog)

@@ -51,7 +51,7 @@ And more:
 
 | Software      | Requirement                                                                                      |
 |:--------------|:-------------------------------------------------------------------------------------------------|
-| Nvidia Driver | - Ubuntu 22.04 `>=515.43.04` <br/> - Ubuntu 24.04 `>=555.42.02` <br/> - Windows 10/11 `>=472.50` |
+| Nvidia Driver | - Ubuntu 22.04 `>=515.43.04` <br/> - Ubuntu 24.04 `>=555.42.02` <br/> - Ubuntu 26.04 `>=590` (for OptiX 9.1; `>=565` suffices for OptiX 9.0) <br/> - Windows 10/11 `>=472.50` |
 
 ## Usage
 
@@ -94,12 +94,14 @@ docker build \
    --output=build .
 ```
 
-## Building on Ubuntu 22/24
+## Building on Ubuntu 22/24/26
 
 1. Install [CUDA Toolkit](https://developer.nvidia.com/cuda-downloads)
     - Ubuntu 22.04: **11.7+**
     - Ubuntu 24.04: **12.6+**
-2. Download [NVidia OptiX](https://developer.nvidia.com/designworks/optix/downloads/legacy) **7.2**.
+    - Ubuntu 26.04: **13.0+** (supports the system default GCC 15).
+      - CUDA 12.x also works, but its `nvcc` supports only GCC ≤ 13 while Ubuntu 26.04 defaults to GCC 15. In that case install a compatible compiler (`sudo apt install g++-13`); `setup.py` detects this automatically, builds the CUDA device code with it, and keeps the system `libstdc++` for linking — no extra flags required.
+2. Download [NVidia OptiX](https://developer.nvidia.com/designworks/optix/downloads/legacy) **7.2** or newer. On Ubuntu 26.04, OptiX **9.x** is recommended (note: OptiX 9.1 requires NVIDIA driver **R590+** — see the driver table above).
     1. You may be asked to create a Nvidia account to download
 3. Export environment variable:
    1. `export OptiX_INSTALL_DIR=<your-OptiX-path>`.
