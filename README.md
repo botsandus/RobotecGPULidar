@@ -112,6 +112,7 @@ docker build \
      - `./setup.py --cmake="-DCMAKE_BUILD_TYPE=Debug" --make="-j 16"`
    - You can build with extensions, e.g.
       - `./setup.py --with-pcl --with-ros2`
+      - On Ubuntu 26.04, where the pinned vcpkg PCL may not build, build the PCL extension against the system PCL instead (`sudo apt install libpcl-dev`): `./setup.py --with-pcl-system --with-ros2`
    - See `./setup.py --help` for usage information.
 
 ## Building on Windows

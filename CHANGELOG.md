@@ -7,6 +7,7 @@
 - Added support for Ubuntu 26.04 and ROS 2 Lyrical (Kilted is also accepted now), in addition to Humble and Jazzy
 - Added support for building against NVIDIA OptiX 8.x and 9.x (previously OptiX 7.2 only)
   - `optixModuleCreateFromPTX` and the removed `OptixPipelineLinkOptions::debugLevel` field are now guarded by `OPTIX_VERSION`, so the code compiles against OptiX 7.2 as well as 8.x/9.x
+- Added `--with-pcl-system` option to `setup.py` to build the PCL extension against the system-installed PCL (`libpcl-dev`) instead of vcpkg, for platforms where the pinned vcpkg PCL does not build (e.g. Ubuntu 26.04)
 
 ### Changed
 

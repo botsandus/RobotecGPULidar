@@ -53,7 +53,10 @@ def main():
     parser.add_argument("--clean-build", action='store_true',
                         help="Remove build directory before cmake")
     parser.add_argument("--with-pcl", action='store_true',
-                        help="Build RGL with PCL extension")
+                        help="Build RGL with PCL extension (PCL provided via vcpkg)")
+    parser.add_argument("--with-pcl-system", action='store_true',
+                        help="Build RGL with PCL extension using the system-installed PCL instead of vcpkg "
+                             "(useful where the pinned vcpkg PCL does not build, e.g. Ubuntu 26.04)")
     parser.add_argument("--with-ros2", action='store_true',
                         help="Build RGL with ROS2 extension")
     parser.add_argument("--with-ros2-standalone", action='store_true',
@@ -81,6 +84,10 @@ def main():
     # ROS2 standalone obviously implies ROS2
     if args.with_ros2_standalone:
         args.with_ros2 = True
+
+    # PCL via vcpkg and PCL via system packages are mutually exclusive
+    if args.with_pcl and args.with_pcl_system:
+        raise RuntimeError("Use either --with-pcl (vcpkg) or --with-pcl-system (system PCL), not both")
 
     # Go to script directory
     os.chdir(sys.path[0])
@@ -168,7 +175,7 @@ def main():
     cmake_args = [
         f"-DCMAKE_TOOLCHAIN_FILE={os.path.join(pcl_deps.Config().VCPKG_DIR, 'scripts', 'buildsystems', 'vcpkg.cmake') if args.with_pcl else ''}",
         f"-DVCPKG_TARGET_TRIPLET={pcl_deps.Config().VCPKG_TRIPLET if args.with_pcl else ''}",
-        f"-DRGL_BUILD_PCL_EXTENSION={'ON' if args.with_pcl else 'OFF'}",
+        f"-DRGL_BUILD_PCL_EXTENSION={'ON' if (args.with_pcl or args.with_pcl_system) else 'OFF'}",
         f"-DRGL_BUILD_ROS2_EXTENSION={'ON' if args.with_ros2 else 'OFF'}",
         f"-DRGL_BUILD_AGNOCAST_EXTENSION={'ON' if args.with_agnocast else 'OFF'}",
         f"-DRGL_BUILD_UDP_EXTENSION={'ON' if args.with_udp else 'OFF'}",
