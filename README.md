@@ -51,7 +51,7 @@ And more:
 
 | Software      | Requirement                                                                                      |
 |:--------------|:-------------------------------------------------------------------------------------------------|
-| Nvidia Driver | - Ubuntu 22.04 `>=515.43.04` <br/> - Ubuntu 24.04 `>=555.42.02` <br/> - Ubuntu 26.04 `>=590` (for OptiX 9.1; `>=565` suffices for OptiX 9.0) <br/> - Windows 10/11 `>=472.50` |
+| Nvidia Driver | - Ubuntu 22.04 `>=515.43.04` <br/> - Ubuntu 24.04 `>=555.42.02` <br/> - Ubuntu 26.04 `>=570` (OptiX 9.0, used by the prebuilt release; OptiX 9.1 needs `>=590`) <br/> - Windows 10/11 `>=472.50` |
 
 ## Usage
 
